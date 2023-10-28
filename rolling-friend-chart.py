@@ -1,74 +1,79 @@
-import requests
-import json
 from itertools import groupby
 from operator import itemgetter
 
-#LastFM user list
-usersList = []
 
-#Personal LastFM API Key
-apiKey = ''
+import globals as gb
+from services.audio_scrobbler import get_user_top_tracks
 
-#Empty variable to append each song
-dictList = []
 
-#LastFM API
-lastfmApi = 'http://ws.audioscrobbler.com/2.0/'
-lastfmHeaders = {
-    'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
-}
+def calculate_points(playcount):
+    if playcount == 1:
+        return 1
 
-#Getting daily, weekly, monthly, yearly chart of each user in the list
-n = 0
-for user in usersList:
-    n += 1
-    print(f'Collecting the songs by "{user}" {n}-{len(usersList)}')
-    lastfmParams = {
-        'method':
-        'user.gettoptracks',  #user.gettoptracks, user.gettopalbums, user.gettopartists
-        'user': user,
-        'period': '7day',  #overall, 7day, 1month, 3month, 6month, 12month
-        'limit': 1000,  #1 to 1000
-        'api_key': apiKey,
-        'format': 'json'
-    }
-    lastfmResp = requests.get(lastfmApi,
-                              params=lastfmParams,
-                              headers=lastfmHeaders).text
-    lastfmJson = json.loads(lastfmResp)
-    mainkey = list(lastfmJson.keys())[0]
-    childkey = list(lastfmJson[mainkey].keys())
-    childkey.sort()
-    #Cheking if the user has been using LastFM for the period specified in lastfmParams
-    if lastfmJson[mainkey]['@attr']['total'] != '0':
-        for j in lastfmJson[mainkey][childkey[1]]:
-            if mainkey == 'topartists':
+    adjusted_playcount = min(playcount, gb.MAX_PLAYCOUNT)
+    total_points = 1
+    next_point_amount = 0.5
+
+    for _ in range(2, adjusted_playcount + 1):
+        total_points += next_point_amount
+        next_point_amount *= 0.25
+
+    return total_points
+
+
+users_list = []
+
+user_top_lists = []
+
+for user in users_list:
+    response_json = get_user_top_tracks(user)
+    parent_key = list(response_json.keys())[0]
+    child_key = list(response_json[parent_key].keys())
+    child_key.sort()
+    # Cheking if the user has any song
+    if response_json[parent_key]['@attr']['total'] == '0':
+        print(f'The user "{user}" has no songs')
+    else:
+        for j in response_json[parent_key][child_key[1]]:
+            if parent_key == 'topartists':
                 name = j['name']
             else:
-                #Combining each song with its artist to create a more complete 'name' tag, it only works for albums and tracks
+                # Combine the song name and artist name
                 name = f'{j["name"]} - {j["artist"]["name"]}'
-            #It creates a new dictionary to make the count easier
-            key = {'name': name, 'playcount': int(j['playcount'])}
-            dictList.append(key)
-
-#Grouping each track and adding them, more like combining
-get_name = itemgetter('name')
-dictList = [{
-    'name': name,
-    'playcount': sum(d['playcount'] for d in dicts)
-} for name, dicts in groupby(sorted(dictList, key=get_name), key=get_name)]
+            playcount = int(j['playcount'])
+            points = calculate_points(playcount)
+            key = {'name': name,
+                   'points': points,
+                   'playcount': playcount,
+                   'user': user}
+            user_top_lists.append(key)
+    print(f'Finished collecting the songs by "{user}"')
 
 
-#Sorting each song by its playcount
-def get_playcount(track):
-    return track.get('playcount')
+def group_by_name_and_sum_points(lst):
+    lst.sort(key=itemgetter('name'))
+    new_lst = []
+
+    for name, grouped_dicts in groupby(lst, key=itemgetter('name')):
+        dicts = list(grouped_dicts)
+        dicts.sort(key=itemgetter('playcount'), reverse=True)
+
+        points = sum(d['points'] for d in dicts)
+        detail = ', '.join((f"{d['user']} ({d['playcount']})") for d in dicts)
+        new_lst.append({
+            'name': name,
+            'points': points,
+            'detail': detail
+        })
+
+    new_lst.sort(key=itemgetter('points'), reverse=True)
+    return new_lst
 
 
-dictList.sort(key=get_playcount, reverse=True)
+user_top_lists = group_by_name_and_sum_points(user_top_lists)
 
-#Printing the top 10
-n = 0
-for s in dictList[0:10]:
-    n += 1
-    print(f'#{n}. {s["name"]} - [{s["playcount"]}]')
+
+for index, song in enumerate(user_top_lists[0:10]):
+    song_information = f"#{index + 1}. {song['name']} [{song['points']:.2f}]"
+    detail = f"# of plays: {song['detail']}"
+    print(f"{song_information}, {detail}")
