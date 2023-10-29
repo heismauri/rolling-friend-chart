@@ -28,7 +28,7 @@ def process_request(json, user, user_top_lists):
     child_key.sort()
     # Cheking if the user has any song
     if json[parent_key]['@attr']['total'] == '0':
-        print(f'The user "{user}" has no songs')
+        print(f"The user '{user}' has no songs")
     else:
         for j in json[parent_key][child_key[1]]:
             if parent_key == 'topartists':
@@ -85,20 +85,26 @@ def main():
     parser.add_argument('-l', '--length',
                         type=int,
                         default=10,
+                        choices=range(1, 101),
                         help='Length of the top list')
+    parser.add_argument('-d', '--detail',
+                        action='store_true',
+                        help='Show the detail of the top list')
     args = parser.parse_args()
+
     user_top_lists = []
     for user in args.users:
         response_json = get_user_top_items(args.method, user)
         process_request(response_json, user, user_top_lists)
-        print(f'Finished collecting the items from "{user}"')
+        print(f"Finished collecting the items from '{user}'")
 
     user_top_lists = group_by_name_and_sum_points(user_top_lists)
 
     for rank, song in enumerate(user_top_lists[0:args.length], 1):
         song_information = f"#{rank}. {song['name']} [{song['points']:.2f}]"
-        detail = f"# of plays: {song['detail']}"
-        print(f"{song_information}, {detail}")
+        if args.detail:
+            song_information += f", # of plays: {song['detail']}"
+        print(song_information)
 
 
 if __name__ == '__main__':
