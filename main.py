@@ -95,8 +95,8 @@ def main():
 
     user_top_lists = group_by_name_and_sum_points(user_top_lists)
 
-    for idx, song in enumerate(user_top_lists[0:args.length]):
-        song_information = f"#{idx + 1}. {song['name']} [{song['points']:.2f}]"
+    for rank, song in enumerate(user_top_lists[0:args.length], 1):
+        song_information = f"#{rank}. {song['name']} [{song['points']:.2f}]"
         detail = f"# of plays: {song['detail']}"
         print(f"{song_information}, {detail}")
 
