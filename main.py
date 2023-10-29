@@ -82,6 +82,10 @@ def main():
                                  'gettopartists'],
                         required=True,
                         help='Method to get the top items from')
+    parser.add_argument('-l', '--length',
+                        type=int,
+                        default=10,
+                        help='Length of the top list')
     args = parser.parse_args()
     user_top_lists = []
     for user in args.users:
@@ -91,7 +95,7 @@ def main():
 
     user_top_lists = group_by_name_and_sum_points(user_top_lists)
 
-    for idx, song in enumerate(user_top_lists[0:10]):
+    for idx, song in enumerate(user_top_lists[0:args.length]):
         song_information = f"#{idx + 1}. {song['name']} [{song['points']:.2f}]"
         detail = f"# of plays: {song['detail']}"
         print(f"{song_information}, {detail}")
