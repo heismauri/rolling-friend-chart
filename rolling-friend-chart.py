@@ -58,12 +58,17 @@ def group_by_name_and_sum_points(lst):
         dicts = list(grouped_dicts)
         dicts.sort(key=itemgetter('playcount'), reverse=True)
 
-        points = sum(d['points'] for d in dicts)
-        detail = ', '.join((f"{d['user']} ({d['playcount']})") for d in dicts)
+        points = 0
+        detail_parts = []
+
+        for d in dicts:
+            points += d['points']
+            detail_parts.append(f"{d['user']} ({d['playcount']})")
+
         new_lst.append({
             'name': name,
             'points': points,
-            'detail': detail
+            'detail': ', '.join(detail_parts)
         })
 
     new_lst.sort(key=itemgetter('points'), reverse=True)
