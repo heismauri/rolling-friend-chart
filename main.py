@@ -1,3 +1,4 @@
+import argparse
 from itertools import groupby
 from operator import itemgetter
 
@@ -21,20 +22,15 @@ def calculate_points(playcount):
     return total_points
 
 
-users_list = []
-
-user_top_lists = []
-
-for user in users_list:
-    response_json = get_user_top_items('gettoptracks', user)
-    parent_key = list(response_json.keys())[0]
-    child_key = list(response_json[parent_key].keys())
+def process_request(json, user, user_top_lists):
+    parent_key = list(json.keys())[0]
+    child_key = list(json[parent_key].keys())
     child_key.sort()
     # Cheking if the user has any song
-    if response_json[parent_key]['@attr']['total'] == '0':
+    if json[parent_key]['@attr']['total'] == '0':
         print(f'The user "{user}" has no songs')
     else:
-        for j in response_json[parent_key][child_key[1]]:
+        for j in json[parent_key][child_key[1]]:
             if parent_key == 'topartists':
                 name = j['name']
             else:
@@ -47,7 +43,6 @@ for user in users_list:
                    'user': user,
                    'playcount': playcount}
             user_top_lists.append(key)
-    print(f'Finished collecting the items from "{user}"')
 
 
 def group_by_name_and_sum_points(lst):
@@ -75,10 +70,32 @@ def group_by_name_and_sum_points(lst):
     return new_lst
 
 
-user_top_lists = group_by_name_and_sum_points(user_top_lists)
+def main():
+    parser = argparse.ArgumentParser(description='Build a top list of users')
+    parser.add_argument('users',
+                        type=str,
+                        nargs='+',
+                        help='User names to get the top items from')
+    parser.add_argument('-m', '--method',
+                        choices=['gettoptracks',
+                                 'gettopalbums',
+                                 'gettopartists'],
+                        required=True,
+                        help='Method to get the top items from')
+    args = parser.parse_args()
+    user_top_lists = []
+    for user in args.users:
+        response_json = get_user_top_items(args.method, user)
+        process_request(response_json, user, user_top_lists)
+        print(f'Finished collecting the items from "{user}"')
+
+    user_top_lists = group_by_name_and_sum_points(user_top_lists)
+
+    for idx, song in enumerate(user_top_lists[0:10]):
+        song_information = f"#{idx + 1}. {song['name']} [{song['points']:.2f}]"
+        detail = f"# of plays: {song['detail']}"
+        print(f"{song_information}, {detail}")
 
 
-for index, song in enumerate(user_top_lists[0:10]):
-    song_information = f"#{index + 1}. {song['name']} [{song['points']:.2f}]"
-    detail = f"# of plays: {song['detail']}"
-    print(f"{song_information}, {detail}")
+if __name__ == '__main__':
+    main()
