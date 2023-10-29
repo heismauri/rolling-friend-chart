@@ -1,5 +1,10 @@
 **Rolling Friend Chart** is a Python script that creates a chart based on your friends' recent scrobbles from LastFM. It can create charts for artists, albums and tracks. It uses the [LastFM API](https://www.last.fm/api) to collect the data. You can customize the chart by changing the length of the chart and by showing the detail of it, which is how much each item was scrobbled by the user.
 
+# Environment variables
+You need to set the following environment variables `.env` to use this script:
+- `LASTFM_API_KEY`: Your LastFM API key
+- `MAX_PLAYCOUNT`: The maximum number of plays to be considered for the chart (default: 10)
+
 # Usage & options
 ```bash
 python main.py users [users...] -m {gettoptracks,gettopalbums,gettopartists}
