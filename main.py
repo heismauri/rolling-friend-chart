@@ -3,7 +3,7 @@ from operator import itemgetter
 
 
 import globals as gb
-from services.audio_scrobbler import get_user_top_tracks
+from services.audio_scrobbler import get_user_top_items
 
 
 def calculate_points(playcount):
@@ -26,7 +26,7 @@ users_list = []
 user_top_lists = []
 
 for user in users_list:
-    response_json = get_user_top_tracks(user)
+    response_json = get_user_top_items('gettoptracks', user)
     parent_key = list(response_json.keys())[0]
     child_key = list(response_json[parent_key].keys())
     child_key.sort()
@@ -44,10 +44,10 @@ for user in users_list:
             points = calculate_points(playcount)
             key = {'name': name,
                    'points': points,
-                   'playcount': playcount,
-                   'user': user}
+                   'user': user,
+                   'playcount': playcount}
             user_top_lists.append(key)
-    print(f'Finished collecting the songs by "{user}"')
+    print(f'Finished collecting the items from "{user}"')
 
 
 def group_by_name_and_sum_points(lst):

@@ -7,11 +7,11 @@ import globals as gb
 LAST_FM_ENDPOINT = 'http://ws.audioscrobbler.com/2.0/'
 
 
-def get_user_top_tracks(user, period='7day', limit=1000):
+def get_user_top_items(method, user, period='7day', limit=1000):
     last_fm_params = {
         # Available methods:
         # user.gettoptracks, user.gettopalbums, user.gettopartists
-        'method': 'user.gettoptracks',
+        'method': f"user.{method}",
         'user': user,
         # Available periods: overall, 7day, 1month, 3month, 6month, 12month
         'period': period,
