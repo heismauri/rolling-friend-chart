@@ -12,9 +12,10 @@ python main.py users [users...] -m {gettoptracks,gettopalbums,gettopartists}
 
 ## General options
 ```
--h, --help            show this help message and exit
--l, --length {1-100}  length of the top list
--d, --detail          show the detail of the top list
+-h, --help       show this help message and exit
+-p, --period     period to get the top items from, default: 7day {7day,1month,3month,6month,12month,overall}
+-l, --length     length of the top list, default: 10 {1-100}
+-d, --detail     show the detail of the top list
 ```
 
 # Output

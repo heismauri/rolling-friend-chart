@@ -82,6 +82,15 @@ def main():
                                  'gettopartists'],
                         required=True,
                         help='Method to get the top items from')
+    parser.add_argument('-p', '--period',
+                        choices=['7day',
+                                 '1month',
+                                 '3month',
+                                 '6month',
+                                 '12month',
+                                 'overall'],
+                        default='7day',
+                        help='Period to get the top items from')
     parser.add_argument('-l', '--length',
                         type=int,
                         default=10,
@@ -94,7 +103,7 @@ def main():
 
     user_top_lists = []
     for user in args.users:
-        response_json = get_user_top_items(args.method, user)
+        response_json = get_user_top_items(args.method, user, args.period)
         process_request(response_json, user, user_top_lists)
         print(f"Finished collecting the items from '{user}'")
 
