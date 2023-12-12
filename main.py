@@ -80,7 +80,7 @@ def main():
                         choices=['gettoptracks',
                                  'gettopalbums',
                                  'gettopartists'],
-                        required=True,
+                        default='gettoptracks',
                         help='Method to get the top items from')
     parser.add_argument('-p', '--period',
                         choices=['7day',
