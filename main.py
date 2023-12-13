@@ -3,21 +3,16 @@ from itertools import groupby
 from operator import itemgetter
 
 
-import globals as gb
 from services.audio_scrobbler import get_user_top_items
 
 
 def calculate_points(playcount):
-    if playcount == 1:
-        return 1
+    total_points = 1.0
+    current_play_points = 0.9
 
-    adjusted_playcount = min(playcount, gb.MAX_PLAYCOUNT)
-    total_points = 1
-    next_point_amount = 0.5
-
-    for _ in range(2, adjusted_playcount + 1):
-        total_points += next_point_amount
-        next_point_amount *= 0.25
+    for _ in range(2, playcount + 1):
+        total_points += current_play_points
+        current_play_points *= 0.9
 
     return total_points
 
