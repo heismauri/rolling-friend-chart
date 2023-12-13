@@ -51,6 +51,10 @@ def group_by_name_and_sum_points(lst):
 
     for name, grouped_dicts in groupby(lst, key=itemgetter('name')):
         dicts = list(grouped_dicts)
+        # If the song is only in one user's top list, then skip it
+        if len(dicts) == 1:
+            continue
+
         dicts.sort(key=itemgetter('playcount'), reverse=True)
 
         points = 0
